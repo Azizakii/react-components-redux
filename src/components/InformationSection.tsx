@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import useInput from "../hooks/useInput";
 import { styled } from "styled-components";
+import axios from "axios";
+import { useAppDispatch, useAppSelector } from "../hooks/redux";
+import { userApi } from "../services/userService";
 
 interface User {
 	id: number;
@@ -14,28 +17,18 @@ interface User {
 const Section = styled.section`
 	background-color: rgb(134, 177, 247);
 	padding: 2rem;
-	border-radius: 8px
+	border-radius: 8px;
 `;
 
 export default function InformationSection() {
-	const [users, setUsers] = useState<User[]>();
-	const [loading, setLoading] = useState(true);
+	const { data: users, isLoading, error } = userApi.useFetchAllUsersQuery(10);
 	const input = useInput();
 
-	useEffect(() => {
-		fetch("https://jsonplaceholder.typicode.com/users")
-			.then((res) => res.json())
-			.then((data) => {
-				setUsers(data);
-				setLoading(false);
-			})
-			.catch((error) => {
-				console.log("Error loading data");
-				setLoading(true);
-			});
-	}, []);
-
-	if (loading) return <p>Loading...</p>;
+	if (isLoading) return <p>Loading...</p>;
+	if (error) {
+		const message = "message" in error ? error.message : "Loading Error!";
+		return <p>{message}</p>;
+	}
 
 	return (
 		<Section>
